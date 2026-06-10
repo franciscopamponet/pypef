@@ -27,7 +27,7 @@ export function calcReactions(L, loads) {
       Rh += -ld.Fx;
       Me += -ld.Fy * ld.pos;
     } else if (ld.type === "moment") {
-      Me += ld.M;
+      Me += -ld.M;
     } else if (ld.type === "uniform") {
       const w = ld.end - ld.start;
       const R = ld.q * w;
