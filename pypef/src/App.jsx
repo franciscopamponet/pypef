@@ -42,6 +42,7 @@ export default function PyPef() {
   const [computed, setComputed] = useState(null);
   const [addMenuOpen, setAddMenuOpen] = useState(false);
   const [cursorX, setCursorX] = useState(null);
+  const [manualX, setManualX] = useState("");
 
   const addLoad = (type) => { setLoads(p => [...p, { id: idC++, ...defaultLoad(type) }]); setAddMenuOpen(false); };
   const updateLoad = (id, data) => setLoads(p => p.map(l => l.id === id ? { ...l, ...data } : l));
@@ -53,8 +54,12 @@ export default function PyPef() {
     setComputed({ reactions, diagrams });
   }, [L, loads]);
 
-  const cursorVals = computed && cursorX !== null
-    ? getValAtX(computed.diagrams, cursorX, L)
+  const activeX = cursorX !== null
+    ? cursorX
+    : (manualX !== "" ? Math.max(0, Math.min(L, parseFloat(manualX))) : null);
+
+  const cursorVals = computed && activeX !== null
+    ? getValAtX(computed.diagrams, activeX, L)
     : null;
 
   return (
@@ -137,7 +142,7 @@ export default function PyPef() {
 
           {/* Painel Direito — Resultados */}
           <div>
-            <BeamPreview L={L} loads={loads} cursorX={computed ? cursorX : null} onCursorChange={setCursorX} />
+            <BeamPreview L={L} loads={loads} cursorX={computed ? activeX : null} onCursorChange={setCursorX} />
 
             {computed && (
               <>
@@ -157,9 +162,47 @@ export default function PyPef() {
 
                 <CursorPanel vals={cursorVals} />
 
-                <Diagram title="Força Cortante V(x)" xs={computed.diagrams.xs} ys={computed.diagrams.V} unit="kN" color={C.orange} L={L} cursorX={cursorX} />
-                <Diagram title="Momento Fletor M(x)" xs={computed.diagrams.xs} ys={computed.diagrams.M} unit="kN·m" color={C.navy} L={L} cursorX={cursorX} />
-                <Diagram title="Força Normal N(x)" xs={computed.diagrams.xs} ys={computed.diagrams.N} unit="kN" color="#2e7d5b" L={L} cursorX={cursorX} />
+                {/* Input de seção exata */}
+                <div style={{
+                  background: C.white, borderRadius: 10, padding: 12,
+                  marginBottom: 10, border: `1px solid ${C.gray100}`,
+                  display: "flex", alignItems: "center", gap: 10,
+                }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: C.navy }}>
+                    Seção exata:
+                  </span>
+                  <span style={{ fontSize: 11, color: C.gray400 }}>x =</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max={L}
+                    step="0.01"
+                    value={manualX}
+                    onChange={e => setManualX(e.target.value)}
+                    placeholder="0.00"
+                    style={{
+                      ...s.input, width: 90, fontSize: 14, fontWeight: 700,
+                      textAlign: "center", color: C.orange,
+                    }}
+                  />
+                  <span style={{ fontSize: 11, color: C.gray400 }}>m</span>
+                  {manualX !== "" && (
+                    <button
+                      onClick={() => setManualX("")}
+                      style={{
+                        background: "none", border: "none", color: C.gray400,
+                        cursor: "pointer", fontSize: 14,
+                      }}
+                    >✕</button>
+                  )}
+                  <span style={{ fontSize: 9, color: C.gray400, marginLeft: "auto" }}>
+                    ou passe o cursor na viga
+                  </span>
+                </div>
+
+                <Diagram title="Força Cortante V(x)" xs={computed.diagrams.xs} ys={computed.diagrams.V} unit="kN" color={C.orange} L={L} cursorX={activeX} />
+                <Diagram title="Momento Fletor M(x)" xs={computed.diagrams.xs} ys={computed.diagrams.M} unit="kN·m" color={C.navy} L={L} cursorX={activeX} />
+                <Diagram title="Força Normal N(x)" xs={computed.diagrams.xs} ys={computed.diagrams.N} unit="kN" color="#2e7d5b" L={L} cursorX={activeX} />
                 <EquationsPanel L={L} loads={loads} />
               </>
             )}
