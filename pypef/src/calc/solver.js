@@ -5,7 +5,7 @@
  * Convenção de sinais:
  *   - Fy negativo = força para baixo
  *   - q negativo  = carga distribuída para baixo
- *   - M positivo  = momento anti-horário
+ *   - M positivo  = momento horário (↻)
  *   - Rv positivo = reação vertical para cima
  *   - Me positivo = momento horário (traciona fibra inferior)
  */
@@ -27,7 +27,7 @@ export function calcReactions(L, loads) {
       Rh += -ld.Fx;
       Me += -ld.Fy * ld.pos;
     } else if (ld.type === "moment") {
-      Me += -ld.M;
+      Me += ld.M;
     } else if (ld.type === "uniform") {
       const w = ld.end - ld.start;
       const R = ld.q * w;
@@ -84,7 +84,7 @@ export function calcDiagrams(L, loads, n = 500) {
         }
       } else if (ld.type === "moment") {
         if (x >= ld.pos) {
-          m += -ld.M;
+          m += ld.M;
         }
       } else if (ld.type === "uniform") {
         if (x > ld.start) {
