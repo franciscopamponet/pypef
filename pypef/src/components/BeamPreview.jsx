@@ -1,4 +1,3 @@
-
 import { useRef } from "react";
 import { C } from "./colors";
 
@@ -56,13 +55,15 @@ export default function BeamPreview({ L, loads, cursorX, onCursorChange }) {
 
         {/* Carregamentos */}
         {loads.map((ld, idx) => {
+          // ── Força Concentrada ──
           if (ld.type === "concentrated") {
             const px = sx(ld.pos), dir = ld.Fy < 0 ? 1 : -1;
             return (
               <g key={idx}>
                 <line x1={px} y1={bY - 32 * dir} x2={px} y2={bY}
                   stroke={C.orange} strokeWidth="2.2" />
-                <polygon points={`${px},${bY} ${px - 5},${bY - 9 * dir} ${px + 5},${bY - 9 * dir}`}
+                <polygon
+                  points={`${px},${bY} ${px - 5},${bY - 9 * dir} ${px + 5},${bY - 9 * dir}`}
                   fill={C.orange} />
                 <text x={px} y={bY - 35 * dir} textAnchor="middle"
                   fontSize="8.5" fill={C.orange} fontWeight="700">
@@ -80,8 +81,50 @@ export default function BeamPreview({ L, loads, cursorX, onCursorChange }) {
               </g>
             );
           }
+
+          // ── Momento Concentrado ──
+          if (ld.type === "moment") {
+            const px = sx(ld.pos);
+            const r = 14;
+            const clr = "#8e44ad";
+            const cw = ld.M > 0 ? 1 : 0; // sweep flag para o arco
+
+            // Arco de 270° (de -210° a 60° ou inverso)
+            const a1 = ld.M > 0 ? -210 : -150;
+            const a2 = ld.M > 0 ? 60 : 330;
+            const toRad = (d) => (d * Math.PI) / 180;
+
+            const x1 = px + r * Math.cos(toRad(a1));
+            const y1 = bY + r * Math.sin(toRad(a1));
+            const x2 = px + r * Math.cos(toRad(a2));
+            const y2 = bY + r * Math.sin(toRad(a2));
+
+            // Seta na ponta do arco
+            const aDir = ld.M > 0 ? toRad(a2 + 90) : toRad(a2 - 90);
+            const ax1 = x2 + 6 * Math.cos(aDir + 0.4);
+            const ay1 = y2 + 6 * Math.sin(aDir + 0.4);
+            const ax2 = x2 + 6 * Math.cos(aDir - 0.4);
+            const ay2 = y2 + 6 * Math.sin(aDir - 0.4);
+
+            return (
+              <g key={idx}>
+                <path
+                  d={`M${x1},${y1} A${r},${r} 0 1,${cw} ${x2},${y2}`}
+                  stroke={clr} strokeWidth="2" fill="none"
+                />
+                <polygon points={`${x2},${y2} ${ax1},${ay1} ${ax2},${ay2}`} fill={clr} />
+                <text x={px} y={bY - r - 6} textAnchor="middle"
+                  fontSize="8.5" fill={clr} fontWeight="700">
+                  {Math.abs(ld.M)} kN·m
+                </text>
+              </g>
+            );
+          }
+
+          // ── Distribuída Uniforme ──
           if (ld.type === "uniform") {
-            const x1 = sx(ld.start), x2 = sx(ld.end), dir = ld.q < 0 ? 1 : -1, ar = 6;
+            const x1 = sx(ld.start), x2 = sx(ld.end);
+            const dir = ld.q < 0 ? 1 : -1, ar = 6;
             return (
               <g key={idx}>
                 <rect x={Math.min(x1, x2)} y={bY - 28 * dir}
@@ -95,7 +138,8 @@ export default function BeamPreview({ L, loads, cursorX, onCursorChange }) {
                     <g key={i}>
                       <line x1={ax} y1={bY - 28 * dir} x2={ax} y2={bY}
                         stroke={C.orange} strokeWidth="1" />
-                      <polygon points={`${ax},${bY} ${ax - 3},${bY - 6 * dir} ${ax + 3},${bY - 6 * dir}`}
+                      <polygon
+                        points={`${ax},${bY} ${ax - 3},${bY - 6 * dir} ${ax + 3},${bY - 6 * dir}`}
                         fill={C.orange} />
                     </g>
                   );
@@ -107,6 +151,8 @@ export default function BeamPreview({ L, loads, cursorX, onCursorChange }) {
               </g>
             );
           }
+
+          // ── Distribuída Triangular ──
           if (ld.type === "triangular") {
             const x1 = sx(ld.start), x2 = sx(ld.end);
             const dir = ld.qMax < 0 ? 1 : -1, hMax = 28, ar = 6;
@@ -117,8 +163,10 @@ export default function BeamPreview({ L, loads, cursorX, onCursorChange }) {
               <g key={idx}>
                 <polygon points={pts} fill={C.orange} opacity=".08" />
                 <line
-                  x1={x1} y1={ld.direction === "crescente" ? bY : bY - hMax * dir}
-                  x2={x2} y2={ld.direction === "crescente" ? bY - hMax * dir : bY}
+                  x1={x1}
+                  y1={ld.direction === "crescente" ? bY : bY - hMax * dir}
+                  x2={x2}
+                  y2={ld.direction === "crescente" ? bY - hMax * dir : bY}
                   stroke={C.orange} strokeWidth="1.8" />
                 {Array.from({ length: ar }, (_, i) => {
                   const frac = i / (ar - 1), ax = x1 + (x2 - x1) * frac;
@@ -128,7 +176,8 @@ export default function BeamPreview({ L, loads, cursorX, onCursorChange }) {
                     <g key={i}>
                       <line x1={ax} y1={bY - ah} x2={ax} y2={bY}
                         stroke={C.orange} strokeWidth="1" />
-                      <polygon points={`${ax},${bY} ${ax - 3},${bY - 6 * dir} ${ax + 3},${bY - 6 * dir}`}
+                      <polygon
+                        points={`${ax},${bY} ${ax - 3},${bY - 6 * dir} ${ax + 3},${bY - 6 * dir}`}
                         fill={C.orange} />
                     </g>
                   ) : null;
@@ -148,9 +197,11 @@ export default function BeamPreview({ L, loads, cursorX, onCursorChange }) {
           <>
             <line x1={sx(cursorX)} y1={bY - 30} x2={sx(cursorX)} y2={bY + 22}
               stroke={C.orange} strokeWidth="1.5" strokeDasharray="4,2" />
-            <polygon points={`${sx(cursorX)},${bY - 4} ${sx(cursorX) - 5},${bY - 12} ${sx(cursorX) + 5},${bY - 12}`}
+            <polygon
+              points={`${sx(cursorX)},${bY - 4} ${sx(cursorX) - 5},${bY - 12} ${sx(cursorX) + 5},${bY - 12}`}
               fill={C.orange} />
-            <polygon points={`${sx(cursorX)},${bY + 4} ${sx(cursorX) - 5},${bY + 12} ${sx(cursorX) + 5},${bY + 12}`}
+            <polygon
+              points={`${sx(cursorX)},${bY + 4} ${sx(cursorX) - 5},${bY + 12} ${sx(cursorX) + 5},${bY + 12}`}
               fill={C.orange} />
           </>
         )}

@@ -5,8 +5,9 @@
  * Convenção de sinais:
  *   - Fy negativo = força para baixo
  *   - q negativo  = carga distribuída para baixo
+ *   - M positivo  = momento anti-horário
  *   - Rv positivo = reação vertical para cima
- *   - M positivo  = momento horário (traciona fibra inferior)
+ *   - Me positivo = momento horário (traciona fibra inferior)
  */
 
 /**
@@ -25,6 +26,8 @@ export function calcReactions(L, loads) {
       Rv += -ld.Fy;
       Rh += -ld.Fx;
       Me += -ld.Fy * ld.pos;
+    } else if (ld.type === "moment") {
+      Me += -ld.M;
     } else if (ld.type === "uniform") {
       const w = ld.end - ld.start;
       const R = ld.q * w;
@@ -78,6 +81,10 @@ export function calcDiagrams(L, loads, n = 500) {
           v += ld.Fy;
           m += ld.Fy * (x - ld.pos);
           nn += ld.Fx;
+        }
+      } else if (ld.type === "moment") {
+        if (x >= ld.pos) {
+          m += ld.M;
         }
       } else if (ld.type === "uniform") {
         if (x > ld.start) {
@@ -145,16 +152,13 @@ export function getValAtX(diagrams, xPos, L) {
 export function getTrechos(L, loads) {
   const pts = new Set([0, L]);
   for (const ld of loads) {
-    if (ld.type === "concentrated") pts.add(ld.pos);
-    else {
+    if (ld.type === "concentrated" || ld.type === "moment") {
+      pts.add(ld.pos);
+    } else {
       pts.add(ld.start);
       pts.add(ld.end);
     }
   }
   const sorted = [...pts].sort((a, b) => a - b);
-  const trechos = [];
-  for (let i = 0; i < sorted.length - 1; i++) {
-    trechos.push({ start: sorted[i], end: sorted[i + 1] });
-  }
-  return trechos;
+  return sorted.slice(0, -1).map((s, i) => ({ start: s, end: sorted[i + 1] }));
 }

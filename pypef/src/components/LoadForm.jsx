@@ -2,8 +2,16 @@ import { C } from "./colors";
 
 const LOAD_TYPES = {
   concentrated: { label: "Força Concentrada", icon: "↓" },
+  moment: { label: "Momento Concentrado", icon: "↻" },
   uniform: { label: "Distribuída Uniforme", icon: "▬" },
   triangular: { label: "Distribuída Triangular", icon: "◺" },
+};
+
+const TYPE_COLORS = {
+  concentrated: C.orange,
+  moment: "#8e44ad",
+  uniform: C.orange,
+  triangular: C.orange,
 };
 
 const inputStyle = {
@@ -34,10 +42,12 @@ export default function LoadForm({ load, onChange, onRemove }) {
     </div>
   );
 
+  const borderColor = TYPE_COLORS[load.type] || C.orange;
+
   return (
     <div style={{
       background: C.white, borderRadius: 8, padding: 10, marginBottom: 8,
-      border: `1px solid ${C.gray100}`, borderLeft: `3px solid ${C.orange}`,
+      border: `1px solid ${C.gray100}`, borderLeft: `3px solid ${borderColor}`,
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
         <span style={{ fontSize: 12, fontWeight: 700, color: C.navy }}>
@@ -50,6 +60,9 @@ export default function LoadForm({ load, onChange, onRemove }) {
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         {load.type === "concentrated" && (
           <>{field("Fy", "Fy", "kN")}{field("Fx", "Fx", "kN")}{field("Posição", "pos", "m")}</>
+        )}
+        {load.type === "moment" && (
+          <>{field("M", "M", "kN·m")}{field("Posição", "pos", "m")}</>
         )}
         {load.type === "uniform" && (
           <>{field("q", "q", "kN/m")}{field("Início", "start", "m")}{field("Fim", "end", "m")}</>

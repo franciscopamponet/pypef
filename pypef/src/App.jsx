@@ -11,6 +11,7 @@ import EquationsPanel from "./components/EquationsPanel";
 
 const LOAD_TYPES = {
   concentrated: { label: "Força Concentrada", icon: "↓" },
+  moment: { label: "Momento Concentrado", icon: "↻" },
   uniform: { label: "Distribuída Uniforme", icon: "▬" },
   triangular: { label: "Distribuída Triangular", icon: "◺" },
 };
@@ -18,6 +19,7 @@ const LOAD_TYPES = {
 const defaultLoad = (type) => {
   switch (type) {
     case "concentrated": return { type, Fy: -10, Fx: 0, pos: 2 };
+    case "moment": return { type, M: 5, pos: 2.5 };
     case "uniform": return { type, q: -5, start: 0.5, end: 3 };
     case "triangular": return { type, qMax: -8, start: 0.5, end: 3, direction: "crescente" };
     default: return { type: "concentrated", Fy: -10, Fx: 0, pos: 2 };
