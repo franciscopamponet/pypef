@@ -87,11 +87,11 @@ export default function BeamPreview({ L, loads, cursorX, onCursorChange }) {
             const px = sx(ld.pos);
             const r = 14;
             const clr = "#8e44ad";
-            const cw = ld.M > 0 ? 1 : 0; // sweep flag para o arco
+            const cw = ld.M > 0 ? 0 : 1; // M positivo = horário
 
             // Arco de 270° (de -210° a 60° ou inverso)
-            const a1 = ld.M > 0 ? -210 : -150;
-            const a2 = ld.M > 0 ? 60 : 330;
+            const a1 = ld.M > 0 ? -150 : -210;
+            const a2 = ld.M > 0 ? 330 : 60;
             const toRad = (d) => (d * Math.PI) / 180;
 
             const x1 = px + r * Math.cos(toRad(a1));
@@ -100,7 +100,7 @@ export default function BeamPreview({ L, loads, cursorX, onCursorChange }) {
             const y2 = bY + r * Math.sin(toRad(a2));
 
             // Seta na ponta do arco
-            const aDir = ld.M > 0 ? toRad(a2 + 90) : toRad(a2 - 90);
+            const aDir = ld.M > 0 ? toRad(a2 - 90) : toRad(a2 + 90);
             const ax1 = x2 + 6 * Math.cos(aDir + 0.4);
             const ay1 = y2 + 6 * Math.sin(aDir + 0.4);
             const ax2 = x2 + 6 * Math.cos(aDir - 0.4);
